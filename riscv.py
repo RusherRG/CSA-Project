@@ -1,6 +1,8 @@
 import os
 import argparse
 
+from instruction import InstructionSet
+
 MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
 
 
@@ -14,7 +16,7 @@ class InsMem(object):
     def readInstr(self, ReadAddress):
         # read instruction memory
         # return 32 bit hex val)
-        return list(map(int, list("".join(self.IMem[ReadAddress: ReadAddress+4]))))
+        return "".join(self.IMem[ReadAddress: ReadAddress+4])
 
 
 class DataMem(object):
@@ -122,7 +124,8 @@ class SingleStageCore(Core):
     def step(self):
         # Your implementation
         instr = self.ext_imem.readInstr(self.state.IF["PC"])
-
+        decoded_instr = InstructionSet().decode(instr)
+        print(decoded_instr)
         self.halted = True
         if self.state.IF["nop"]:
             self.halted = True

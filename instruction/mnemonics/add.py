@@ -2,4 +2,5 @@ from instruction.types import RType
 
 
 class Add(RType):
-    pass
+    def execute(self):
+        pass
