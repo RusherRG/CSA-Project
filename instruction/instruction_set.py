@@ -1,15 +1,16 @@
-from instruction.mnemonics import Add
+from instruction import Instruction
+from instruction.mnemonics import Add, Addi, LW, SW
 
 
 class InstructionSet:
-    def decode(self, instr):
-        opcode = "".join(instr[:7][::-1])
-        func3 = "".join(instr[12:15][::-1])
+    def decode(self, instr: str) -> Instruction | None:
+        opcode = instr[:7][::-1]
+        func3 = instr[12:15][::-1]
         if opcode == "0110011":
             func7 = "".join(instr[25:][::-1])
             if func3 == "000" and func7 == "0000000":
                 # add instruction
-                return Add(rs1=instr[15:20], rs2=instr[20:25], rd=instr[7:12])
+                return Add()
             elif func3 == "000" and func7 == "0100000":
                 # sub instruction
                 pass
@@ -25,7 +26,7 @@ class InstructionSet:
         elif opcode == "0010011":
             if func3 == "000":
                 # addi instruction
-                pass
+                return Addi()
             elif func3 == "100":
                 # xori instruction
                 pass
@@ -48,11 +49,11 @@ class InstructionSet:
         elif opcode == "0000011":
             if func3 == "000":
                 # lw instruction
-                pass
+                return LW()
         elif opcode == "0100011":
             if func3 == "010":
                 # sw instruction
-                pass
+                return SW()
         elif opcode == "1111111":
             # halt instruction
             pass
