@@ -19,5 +19,3 @@ class Addi(IType):
         wb_state.write_data = mem_state.alu_result
         wb_state.write_enable = mem_state.write_enable
         wb_state.write_reg_addr = mem_state.write_reg_addr
-
-# checking
