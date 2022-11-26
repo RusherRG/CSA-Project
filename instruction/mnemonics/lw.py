@@ -16,7 +16,7 @@ class LW(IType):
     def memory_access(
         self, mem_state: MemoryAccessState, wb_state: WriteBackState, data_mem: DataMem
     ) -> None:
-        mem_data_bin = "0b" + "".join(data_mem.read_data_mem(mem_state.alu_result))
+        mem_data_bin = "0b" + "".join(data_mem.read_data_mem(mem_state.read_mem))
         wb_state.write_data = int(mem_data_bin, 2)
         wb_state.write_enable = mem_state.write_enable
         wb_state.write_reg_addr = mem_state.write_reg_addr

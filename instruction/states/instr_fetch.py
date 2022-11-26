@@ -3,5 +3,5 @@ class InstructionFetchState:
         self.nop = False
         self.PC: int = 0
 
-    def items(self):
+    def __dict__(self):
         return {"nop": self.nop, "PC": self.PC}

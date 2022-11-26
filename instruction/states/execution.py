@@ -13,7 +13,7 @@ class ExecutionState:
         self.alu_op = 0
         self.write_enable = 0
 
-    def items(self):
+    def __dict__(self):
         return {
             "nop": self.nop,
             "Read_data1": self.read_data_1,

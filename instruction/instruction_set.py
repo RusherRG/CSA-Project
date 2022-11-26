@@ -47,7 +47,7 @@ class InstructionSet:
                 # bne instruction
                 pass
         elif opcode == "0000011":
-            if func3 == "000":
+            if func3 == "010":
                 # lw instruction
                 return LW()
         elif opcode == "0100011":

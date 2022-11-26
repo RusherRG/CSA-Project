@@ -3,5 +3,5 @@ class InstructionDecodeState:
         self.nop = False
         self.instr: str = ""
 
-    def items(self):
+    def __dict__(self):
         return {"nop": self.nop, "Instr": self.instr}

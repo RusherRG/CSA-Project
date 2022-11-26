@@ -7,7 +7,7 @@ class WriteBackState:
         self.write_reg_addr = 0
         self.write_enable = 0
 
-    def items(self):
+    def __dict__(self):
         return {
             "nop": self.nop,
             "Wrt_data": self.write_data,

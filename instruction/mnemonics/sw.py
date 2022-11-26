@@ -3,11 +3,11 @@ from instruction.states import (
     MemoryAccessState,
     WriteBackState,
 )
-from instruction.types import BType
+from instruction.types import SType
 from utils import DataMem
 
 
-class SW(BType):
+class SW(SType):
     def execute(self, ex_state: ExecutionState, mem_state: MemoryAccessState) -> None:
         mem_state.write_mem = ex_state.imm + ex_state.read_data_1
         mem_state.store_data = ex_state.read_data_2

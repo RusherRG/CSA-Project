@@ -11,7 +11,7 @@ class InsMem(object):
     def __init__(self, name: str, io_dir: str):
         self.id = name
 
-        with open(io_dir + "/imem.txt") as im:
+        with open(io_dir + "/imem.txt", "r") as im:
             self.IMem = [data.replace("\n", "") for data in im.readlines()]
 
     def read_instr(self, read_address: int) -> str:
@@ -24,7 +24,7 @@ class DataMem(object):
     def __init__(self, name: str, io_dir: str):
         self.id = name
         self.io_dir = io_dir
-        with open(io_dir + "/dmem.txt") as dm:
+        with open(io_dir + "/dmem.txt", "r") as dm:
             self.DMem = [data.replace("\n", "") for data in dm.readlines()]
 
     def read_data_mem(self, read_addr):
@@ -72,6 +72,12 @@ class RegisterFile(object):
 class State(object):
     def __init__(self):
         self.IF = InstructionFetchState()
+        self.ID = InstructionDecodeState()
+        self.EX = ExecutionState()
+        self.MEM = MemoryAccessState()
+        self.WB = WriteBackState()
+
+    def next(self):
         self.ID = InstructionDecodeState()
         self.EX = ExecutionState()
         self.MEM = MemoryAccessState()

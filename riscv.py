@@ -2,7 +2,7 @@ import os
 import argparse
 
 from instruction import InstructionSet
-from utils import DataMem, InsMem, Core
+from utils import DataMem, InsMem, Core, State
 
 MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
 
@@ -17,6 +17,7 @@ class SingleStageCore(Core):
         new_instr = self.ext_imem.read_instr(self.state.IF.PC)[::-1]
         self.state.ID.instr = new_instr
         instr = InstructionSet().decode(new_instr)
+        print(instr)
         if instr is None:
             self.halted = True
             return
@@ -26,12 +27,10 @@ class SingleStageCore(Core):
 
         self.myRF.output_RF(self.cycle)  # dump RF
         self.print_state(
-            self.nextState, self.cycle
+            self.state, self.cycle
         )  # print states after executing cycle 0, cycle 1, cycle 2 ...
 
-        self.state = (
-            self.nextState
-        )  # The end of the cycle and updates the current state with the values calculated in this cycle
+        self.state.next()  # The end of the cycle and updates the current state with the values calculated in this cycle
         self.state.IF.PC += 4
         self.cycle += 1
 
@@ -40,8 +39,21 @@ class SingleStageCore(Core):
             "-" * 70 + "\n",
             "State after executing cycle: " + str(cycle) + "\n",
         ]
-        printstate.append("IF.PC: " + str(state.IF.PC) + "\n")
-        printstate.append("IF.nop: " + str(state.IF.nop) + "\n")
+        printstate.extend(
+            ["IF." + key + ": " + str(val) + "\n" for key, val in state.IF.__dict__().items()]
+        )
+        printstate.extend(
+            ["ID." + key + ": " + str(val) + "\n" for key, val in state.ID.__dict__().items()]
+        )
+        printstate.extend(
+            ["EX." + key + ": " + str(val) + "\n" for key, val in state.EX.__dict__().items()]
+        )
+        printstate.extend(
+            ["MEM." + key + ": " + str(val) + "\n" for key, val in state.MEM.__dict__().items()]
+        )
+        printstate.extend(
+            ["WB." + key + ": " + str(val) + "\n" for key, val in state.WB.__dict__().items()]
+        )
 
         if cycle == 0:
             perm = "w"
