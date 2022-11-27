@@ -1,9 +1,9 @@
 from instruction import Instruction
-from instruction.mnemonics import Add, Addi, LW, SW
+from instruction.mnemonics import Add, Sub, Xor, Or, And, Addi, Xori, Andi, Ori, LW, SW
 
 
 class InstructionSet:
-    def decode(self, instr: str) -> Instruction | None:
+    def decode(self, instr: str):
         opcode = instr[:7][::-1]
         func3 = instr[12:15][::-1]
         if opcode == "0110011":
@@ -13,15 +13,19 @@ class InstructionSet:
                 return Add()
             elif func3 == "000" and func7 == "0100000":
                 # sub instruction
+                return Sub()
                 pass
             elif func3 == "100" and func7 == "0000000":
                 # xor instruction
+                return Xor()
                 pass
             elif func3 == "110" and func7 == "0000000":
                 # or instruction
+                return Or()
                 pass
             elif func3 == "111" and func7 == "0000000":
                 # and instruction
+                return And()
                 pass
         elif opcode == "0010011":
             if func3 == "000":
@@ -29,12 +33,15 @@ class InstructionSet:
                 return Addi()
             elif func3 == "100":
                 # xori instruction
+                return Xori()
                 pass
             elif func3 == "110":
                 # ori instruction
+                return Ori()
                 pass
             elif func3 == "111":
                 # andi instruction
+                return Andi()
                 pass
         elif opcode == "1101111":
             # jal instruction
