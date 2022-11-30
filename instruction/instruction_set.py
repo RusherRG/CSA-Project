@@ -1,9 +1,9 @@
 from instruction import Instruction
-from instruction.mnemonics import Add, Sub, Xor, Or, And, Addi, Xori, Andi, Ori, LW, SW
+from instruction.mnemonics import Add, Sub, Xor, Or, And, Addi, Xori, Andi, Ori, LW, SW, HALT
 
 
 class InstructionSet:
-    def decode(self, instr: str):
+    def decode(self, instr: str) -> Instruction:
         opcode = instr[:7][::-1]
         func3 = instr[12:15][::-1]
         if opcode == "0110011":
@@ -61,7 +61,5 @@ class InstructionSet:
             if func3 == "010":
                 # sw instruction
                 return SW()
-        elif opcode == "1111111":
-            # halt instruction
-            pass
-        return None
+        # halt instruction
+        return HALT()

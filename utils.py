@@ -6,6 +6,8 @@ from instruction.states import (
     WriteBackState,
 )
 
+MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
+
 
 class InsMem(object):
     def __init__(self, name: str, io_dir: str):
@@ -26,6 +28,7 @@ class DataMem(object):
         self.io_dir = io_dir
         with open(io_dir + "/dmem.txt", "r") as dm:
             self.DMem = [data.replace("\n", "") for data in dm.readlines()]
+        self.DMem.extend(["00000000"] * (MemSize - len(self.DMem)))
 
     def read_data_mem(self, read_addr):
         # read data memory
@@ -40,7 +43,7 @@ class DataMem(object):
             self.DMem[addr + i] = write_data_bin[8 * i : 8 * (i + 1)]
 
     def output_data_mem(self):
-        resPath = self.io_dir + "/" + self.id + "_DMEMResult.txt"
+        resPath = self.io_dir + "/output/" + self.id + "_DMEMResult.txt"
         with open(resPath, "w") as rp:
             rp.writelines([str(data) + "\n" for data in self.DMem])
 
@@ -60,7 +63,7 @@ class RegisterFile(object):
 
     def output_RF(self, cycle):
         op = ["-" * 70 + "\n", "State of RF after executing cycle:" + str(cycle) + "\n"]
-        op.extend([str(val) + "\n" for val in self.registers])
+        op.extend([f"{val:032b}" + "\n" for val in self.registers])
         if cycle == 0:
             perm = "w"
         else:

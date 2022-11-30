@@ -9,8 +9,8 @@ MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but f
 
 class SingleStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
-        super(SingleStageCore, self).__init__(io_dir + "/SS_", imem, dmem)
-        self.opFilePath = io_dir + "/StateResult_SS.txt"
+        super(SingleStageCore, self).__init__(io_dir + "/output/SS_", imem, dmem)
+        self.opFilePath = io_dir + "/output/StateResult_SS.txt"
 
     def step(self):
         # Your implementation
@@ -18,12 +18,11 @@ class SingleStageCore(Core):
         self.state.ID.instr = new_instr
         instr = InstructionSet().decode(new_instr)
         print(instr)
-        if instr is None:
-            self.halted = True
-            return
         instr.run(self.state, self.myRF, self.ext_dmem)
         if self.state.IF.nop:
             self.halted = True
+        else:
+            self.state.IF.PC += 4
 
         self.myRF.output_RF(self.cycle)  # dump RF
         self.print_state(
@@ -31,7 +30,6 @@ class SingleStageCore(Core):
         )  # print states after executing cycle 0, cycle 1, cycle 2 ...
 
         self.state.next()  # The end of the cycle and updates the current state with the values calculated in this cycle
-        self.state.IF.PC += 4
         self.cycle += 1
 
     def print_state(self, state, cycle):
@@ -39,21 +37,8 @@ class SingleStageCore(Core):
             "-" * 70 + "\n",
             "State after executing cycle: " + str(cycle) + "\n",
         ]
-        printstate.extend(
-            ["IF." + key + ": " + str(val) + "\n" for key, val in state.IF.__dict__().items()]
-        )
-        printstate.extend(
-            ["ID." + key + ": " + str(val) + "\n" for key, val in state.ID.__dict__().items()]
-        )
-        printstate.extend(
-            ["EX." + key + ": " + str(val) + "\n" for key, val in state.EX.__dict__().items()]
-        )
-        printstate.extend(
-            ["MEM." + key + ": " + str(val) + "\n" for key, val in state.MEM.__dict__().items()]
-        )
-        printstate.extend(
-            ["WB." + key + ": " + str(val) + "\n" for key, val in state.WB.__dict__().items()]
-        )
+        printstate.append("IF.PC: " + str(state.IF.PC) + "\n")
+        printstate.append("IF.nop: " + str(state.IF.nop) + "\n")
 
         if cycle == 0:
             perm = "w"
@@ -65,8 +50,8 @@ class SingleStageCore(Core):
 
 class FiveStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
-        super(FiveStageCore, self).__init__(io_dir + "/FS_", imem, dmem)
-        self.opFilePath = io_dir + "/StateResult_FS.txt"
+        super(FiveStageCore, self).__init__(io_dir + "/output/FS_", imem, dmem)
+        self.opFilePath = io_dir + "/output/StateResult_FS.txt"
 
     def step(self):
         # Your implementation
