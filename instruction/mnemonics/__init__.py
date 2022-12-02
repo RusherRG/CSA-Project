@@ -7,6 +7,8 @@ from .addi import Addi
 from .xori import Xori
 from .ori import Ori
 from .andi import Andi
+from .beq import Beq
+from .bne import Bne
 from .lw import LW
 from .sw import SW
 from .halt import HALT

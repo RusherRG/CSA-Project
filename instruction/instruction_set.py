@@ -1,5 +1,20 @@
 from instruction import Instruction
-from instruction.mnemonics import Add, Sub, Xor, Or, And, Addi, Xori, Andi, Ori, LW, SW, HALT
+from instruction.mnemonics import (
+    Add,
+    Sub,
+    Xor,
+    Or,
+    And,
+    Addi,
+    Xori,
+    Andi,
+    Ori,
+    Beq,
+    Bne,
+    LW,
+    SW,
+    HALT,
+)
 
 
 class InstructionSet:
@@ -49,10 +64,10 @@ class InstructionSet:
         elif opcode == "1100011":
             if func3 == "000":
                 # beq instruction
-                pass
+                return Beq()
             elif func3 == "001":
                 # bne instruction
-                pass
+                return Bne()
         elif opcode == "0000011":
             if func3 == "000":
                 # lw instruction

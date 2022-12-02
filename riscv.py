@@ -18,30 +18,18 @@ class SingleStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
         super(SingleStageCore, self).__init__(io_dir + "/output/SS_", imem, dmem)
         self.opFilePath = io_dir + "/output/StateResult_SS.txt"
-        self.if_stage = InstructionFetchStage(self.state, self.ext_imem)
-        self.id_stage = InstructionDecodeStage(self.state, self.myRF)
-        self.ex_stage = ExecutionStage(self.state)
-        self.mem_stage = MemoryAccessStage(self.state, self.ext_dmem)
-        self.wb_stage = WriteBackStage(self.state, self.myRF)
 
     def step(self):
         # Your implementation
-        # new_instr = self.ext_imem.read_instr(self.state.IF.PC)[::-1]
-        # self.state.ID.instr = new_instr
-        # instr = InstructionSet().decode(new_instr)
-        # print(instr)
-        # instr.run(self.state, self.myRF, self.ext_dmem)
-        # if self.state.IF.nop:
-        #     self.halted = True
-        # else:
-        #     self.state.IF.PC += 4
-
-        self.if_stage.run()
-        if self.id_stage.run() is None:
+        new_instr = self.ext_imem.read_instr(self.state.IF.PC)[::-1]
+        self.state.ID.instr = new_instr
+        instr = InstructionSet().decode(new_instr)
+        print(instr)
+        instr.run(self.state, self.myRF, self.ext_dmem)
+        if self.state.IF.nop:
             self.halted = True
-        self.ex_stage.run()
-        self.mem_stage.run()
-        self.wb_stage.run()
+        else:
+            self.state.IF.PC += 4
 
         self.myRF.output_RF(self.cycle)  # dump RF
         self.print_state(
@@ -97,7 +85,7 @@ class FiveStageCore(Core):
         self.id_stage.run()
 
         # --------------------- IF stage ---------------------
-        if not(self.cycle >= 2 and self.state.EX.nop):
+        if not (self.cycle >= 2 and self.state.EX.nop):
             self.if_stage.run()
 
         if self.cycle > 10:
@@ -183,21 +171,21 @@ if __name__ == "__main__":
     dmem_ss = DataMem("SS", io_dir)
     dmem_fs = DataMem("FS", io_dir)
 
-    # ssCore = SingleStageCore(io_dir, imem, dmem_ss)
-    fsCore = FiveStageCore(io_dir, imem, dmem_fs)
+    ssCore = SingleStageCore(io_dir, imem, dmem_ss)
+    # fsCore = FiveStageCore(io_dir, imem, dmem_fs)
 
     while True:
-        # if not ssCore.halted:
-        #     ssCore.step()
+        if not ssCore.halted:
+            ssCore.step()
 
-        if not fsCore.halted:
-            fsCore.step()
+        # if not fsCore.halted:
+        #     fsCore.step()
 
-        if fsCore.halted:
-            break
-
-        # if ssCore.halted:
+        # if fsCore.halted:
         #     break
+
+        if ssCore.halted:
+            break
 
     # dump SS and FS data mem.
     dmem_ss.output_data_mem()
