@@ -1,6 +1,6 @@
 class WriteBackState:
     def __init__(self) -> None:
-        self.nop = False
+        self.nop = 4
         self.write_data = 0
         self.rs = 0
         self.rt = 0

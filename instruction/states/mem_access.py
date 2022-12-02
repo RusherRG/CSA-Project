@@ -1,6 +1,6 @@
 class MemoryAccessState:
     def __init__(self) -> None:
-        self.nop = False
+        self.nop = 3
         self.alu_result = 0
         self.store_data = 0
         self.rs = 0

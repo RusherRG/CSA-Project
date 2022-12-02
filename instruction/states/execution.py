@@ -1,6 +1,7 @@
 class ExecutionState:
     def __init__(self) -> None:
-        self.nop = False
+        self.nop = 2
+        self.instr = ""
         self.read_data_1 = 0
         self.read_data_2 = 0
         self.imm = 0
@@ -10,12 +11,13 @@ class ExecutionState:
         self.is_I_type = False
         self.read_mem = 0
         self.write_mem = 0
-        self.alu_op = 0
+        self.alu_op = [0, 0]
         self.write_enable = 0
 
     def __dict__(self):
         return {
             "nop": self.nop,
+            "instr": self.instr,
             "Read_data1": self.read_data_1,
             "Read_data2": self.read_data_2,
             "Imm": self.imm,
@@ -25,6 +27,6 @@ class ExecutionState:
             "is_I_type": self.is_I_type,
             "rd_mem": self.read_mem,
             "wrt_mem": self.write_mem,
-            "alu_op": self.alu_op,
+            "alu_op": "".join(list(map(str, self.alu_op))),
             "wrt_enable": self.write_enable,
         }

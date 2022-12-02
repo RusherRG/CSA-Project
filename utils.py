@@ -7,6 +7,7 @@ from instruction.states import (
 )
 
 MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
+SIGN_EXTEND_MASK = 0b11111111111111111111111111111111 # used for sign extension
 
 
 class InsMem(object):
@@ -63,7 +64,7 @@ class RegisterFile(object):
 
     def output_RF(self, cycle):
         op = ["-" * 70 + "\n", "State of RF after executing cycle:" + str(cycle) + "\n"]
-        op.extend([f"{val:032b}" + "\n" for val in self.registers])
+        op.extend([f"{(val & SIGN_EXTEND_MASK):032b}" + "\n" for val in self.registers])
         if cycle == 0:
             perm = "w"
         else:
@@ -97,3 +98,4 @@ class Core(object):
         self.nextState = State()
         self.ext_imem = imem
         self.ext_dmem = dmem
+
