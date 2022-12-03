@@ -21,15 +21,14 @@ class SingleStageCore(Core):
 
     def step(self):
         # Your implementation
+        if self.state.IF.nop:
+            self.halted = True
+
         new_instr = self.ext_imem.read_instr(self.state.IF.PC)[::-1]
         self.state.ID.instr = new_instr
         instr = InstructionSet().decode(new_instr)
         print(instr)
         instr.run(self.state, self.myRF, self.ext_dmem)
-        if self.state.IF.nop:
-            self.halted = True
-        else:
-            self.state.IF.PC += 4
 
         self.myRF.output_RF(self.cycle)  # dump RF
         self.print_state(

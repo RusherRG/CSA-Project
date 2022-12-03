@@ -33,6 +33,7 @@ class Instruction:
     ) -> None:
         if wb_state.write_enable:
             rf.write_RF(wb_state.write_reg_addr, wb_state.write_data)
+        if_state.PC += 4
 
     def run(self, state: State, rf: RegisterFile, data_mem: DataMem) -> None:
         self.decode(state.ID, state.EX, rf)

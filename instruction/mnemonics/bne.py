@@ -30,3 +30,5 @@ class Bne(BType):
     ) -> None:
         if wb_state.write_enable:
             if_state.PC += wb_state.write_data
+        else:
+            if_state.PC += 4

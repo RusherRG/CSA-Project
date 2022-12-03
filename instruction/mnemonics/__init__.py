@@ -11,4 +11,5 @@ from .beq import Beq
 from .bne import Bne
 from .lw import LW
 from .sw import SW
+from .jal import Jal
 from .halt import HALT

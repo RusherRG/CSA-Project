@@ -13,6 +13,7 @@ from instruction.mnemonics import (
     Bne,
     LW,
     SW,
+    Jal,
     HALT,
 )
 
@@ -60,7 +61,7 @@ class InstructionSet:
                 pass
         elif opcode == "1101111":
             # jal instruction
-            pass
+            return Jal()
         elif opcode == "1100011":
             if func3 == "000":
                 # beq instruction
