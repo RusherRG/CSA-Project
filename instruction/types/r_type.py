@@ -10,7 +10,9 @@ class RType(Instruction):
         ex_state: ExecutionState,
         rf: RegisterFile,
     ) -> None:
-        ex_state.read_data_1 = rf.read_RF(int("0b" + id_state.instr[15:20][::-1], 2))
-        ex_state.read_data_2 = rf.read_RF(int("0b" + id_state.instr[20:25][::-1], 2))
-        ex_state.write_reg_addr = int("0b" + id_state.instr[7:12][::-1], 2)
-        ex_state.write_enable = 1
+        ex_state.rs = id_state.instr[15:20][::-1]
+        ex_state.rt = id_state.instr[20:25][::-1]
+        ex_state.read_data_1 = rf.read_RF(ex_state.rs)
+        ex_state.read_data_2 = rf.read_RF(ex_state.rt)
+        ex_state.write_reg_addr = id_state.instr[7:12][::-1]
+        ex_state.write_enable = True

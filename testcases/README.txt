@@ -10,3 +10,10 @@ INFORMATION:
   
 - Five test cases have been revealed and there are 5 more against which your design will be
   evaluated as previously mentioned.
+
+
+
+Edge cases:
+
+- Don't update R0
+- 

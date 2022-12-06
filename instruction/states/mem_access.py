@@ -1,14 +1,14 @@
 class MemoryAccessState:
     def __init__(self) -> None:
-        self.nop = 3
-        self.alu_result = 0
-        self.store_data = 0
-        self.rs = 0
-        self.rt = 0
-        self.write_reg_addr = 0
-        self.read_mem = 0
-        self.write_mem = 0
-        self.write_enable = 0
+        self.nop: int = 3
+        self.alu_result: str = "0" * 32
+        self.store_data: str = "0" * 32
+        self.rs: str = "0" * 5
+        self.rt: str = "0" * 5
+        self.write_reg_addr: str = "0" * 5
+        self.read_mem: bool = False
+        self.write_mem: bool = False
+        self.write_enable: bool = False
 
     def __dict__(self):
         return {
@@ -18,7 +18,7 @@ class MemoryAccessState:
             "Rs": self.rs,
             "Rt": self.rt,
             "Wrt_reg_addr": self.write_reg_addr,
-            "rd_mem": self.read_mem,
-            "wrt_mem": self.write_mem,
-            "wrt_enable": self.write_enable,
+            "rd_mem": int(self.read_mem),
+            "wrt_mem": int(self.write_mem),
+            "wrt_enable": int(self.write_enable),
         }

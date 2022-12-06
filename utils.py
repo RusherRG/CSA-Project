@@ -7,7 +7,6 @@ from instruction.states import (
 )
 
 MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but for this lab, for the space resaon, we keep it as this large number, but the memory is still 32-bit addressable.
-SIGN_EXTEND_MASK = 0b11111111111111111111111111111111 # used for sign extension
 
 
 class InsMem(object):
@@ -31,17 +30,17 @@ class DataMem(object):
             self.DMem = [data.replace("\n", "") for data in dm.readlines()]
         self.DMem.extend(["00000000"] * (MemSize - len(self.DMem)))
 
-    def read_data_mem(self, read_addr):
+    def read_data_mem(self, read_addr: str) -> str:
         # read data memory
         # return 32 bit hex val
-        return self.DMem[read_addr : read_addr + 4]
+        read_addr_int = bin2int(read_addr)
+        return "".join(self.DMem[read_addr_int : read_addr_int + 4])
 
-    def write_data_mem(self, addr, write_data):
+    def write_data_mem(self, addr: str, write_data: str):
         # write data into byte addressable memory
-        write_data_bin = bin(write_data)[2:]
-        write_data_bin = (32 - len(write_data_bin)) * "0" + write_data_bin
+        addr_int = bin2int(addr)
         for i in range(4):
-            self.DMem[addr + i] = write_data_bin[8 * i : 8 * (i + 1)]
+            self.DMem[addr_int + i] = write_data[8 * i : 8 * (i + 1)]
 
     def output_data_mem(self):
         resPath = self.io_dir + "/output/" + self.id + "_DMEMResult.txt"
@@ -52,19 +51,21 @@ class DataMem(object):
 class RegisterFile(object):
     def __init__(self, io_dir):
         self.output_file = io_dir + "RFResult.txt"
-        self.registers = [0x0 for i in range(32)]
+        self.registers = [int2bin(0) for _ in range(32)]
 
-    def read_RF(self, reg_addr):
+    def read_RF(self, reg_addr: str) -> str:
         # Fill in
-        return self.registers[reg_addr]
+        return self.registers[bin2int(reg_addr)]
 
-    def write_RF(self, reg_addr, wrt_reg_data):
+    def write_RF(self, reg_addr: str, wrt_reg_data: str):
         # Fill in
-        self.registers[reg_addr] = wrt_reg_data
+        if reg_addr == "00000":
+            return
+        self.registers[bin2int(reg_addr)] = wrt_reg_data
 
     def output_RF(self, cycle):
         op = ["-" * 70 + "\n", "State of RF after executing cycle:" + str(cycle) + "\n"]
-        op.extend([f"{(val & SIGN_EXTEND_MASK):032b}" + "\n" for val in self.registers])
+        op.extend([f"{val}" + "\n" for val in self.registers])
         if cycle == 0:
             perm = "w"
         else:
@@ -99,3 +100,13 @@ class Core(object):
         self.ext_imem = imem
         self.ext_dmem = dmem
 
+
+def int2bin(x: int, n_bits: int = 32) -> str:
+    bin_x = bin(x & (2**n_bits - 1))[2:]
+    return "0" * (n_bits - len(bin_x)) + bin_x
+
+
+def bin2int(x: str, sign_ext: bool = False) -> int:
+    if sign_ext and x[0] == "1":
+        return -(-int(x, 2) & (2 ** len(x) - 1))
+    return int(x, 2)

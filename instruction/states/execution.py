@@ -1,18 +1,18 @@
 class ExecutionState:
     def __init__(self) -> None:
-        self.nop = 2
-        self.instr = ""
-        self.read_data_1 = 0
-        self.read_data_2 = 0
-        self.imm = 0
-        self.rs = 0
-        self.rt = 0
-        self.write_reg_addr = 0
-        self.is_I_type = False
-        self.read_mem = 0
-        self.write_mem = 0
+        self.nop: int = 2
+        self.instr: str = "0" * 32
+        self.read_data_1: str = "0" * 32
+        self.read_data_2: str = "0" * 32
+        self.imm: str = "0" * 32
+        self.rs: str = "0" * 5
+        self.rt: str = "0" * 5
+        self.write_reg_addr: str = "0" * 5
+        self.is_I_type: bool = False
+        self.read_mem: bool = False
+        self.write_mem: bool = False
         self.alu_op = [0, 0]
-        self.write_enable = 0
+        self.write_enable: bool = False
 
     def __dict__(self):
         return {
@@ -24,9 +24,9 @@ class ExecutionState:
             "Rs": self.rs,
             "Rt": self.rt,
             "Wrt_reg_addr": self.write_reg_addr,
-            "is_I_type": self.is_I_type,
-            "rd_mem": self.read_mem,
-            "wrt_mem": self.write_mem,
+            "is_I_type": int(self.is_I_type),
+            "rd_mem": int(self.read_mem),
+            "wrt_mem": int(self.write_mem),
             "alu_op": "".join(list(map(str, self.alu_op))),
-            "wrt_enable": self.write_enable,
+            "wrt_enable": int(self.write_enable),
         }

@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     imem = InsMem("Imem", io_dir)
     dmem_ss = DataMem("SS", io_dir)
-    dmem_fs = DataMem("FS", io_dir)
+    # dmem_fs = DataMem("FS", io_dir)
 
     ssCore = SingleStageCore(io_dir, imem, dmem_ss)
     # fsCore = FiveStageCore(io_dir, imem, dmem_fs)
@@ -188,4 +188,4 @@ if __name__ == "__main__":
 
     # dump SS and FS data mem.
     dmem_ss.output_data_mem()
-    dmem_fs.output_data_mem()
+    # dmem_fs.output_data_mem()

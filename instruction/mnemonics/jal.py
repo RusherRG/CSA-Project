@@ -5,7 +5,7 @@ from instruction.states import (
     MemoryAccessState,
     WriteBackState,
 )
-from utils import DataMem, RegisterFile
+from utils import DataMem, RegisterFile, bin2int, int2bin
 
 
 class Jal(JType):
@@ -28,5 +28,5 @@ class Jal(JType):
         rf: RegisterFile,
     ) -> None:
         if wb_state.write_enable:
-            rf.write_RF(wb_state.write_reg_addr, if_state.PC + 4)
-            if_state.PC += wb_state.write_data
+            rf.write_RF(wb_state.write_reg_addr, int2bin(if_state.PC + 4))
+            if_state.PC += bin2int(wb_state.write_data, sign_ext=True)

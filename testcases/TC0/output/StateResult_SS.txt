@@ -16,5 +16,9 @@ IF.PC: 16
 IF.nop: 0
 ----------------------------------------------------------------------
 State after executing cycle: 4
-IF.PC: 20
-IF.nop: 0
+IF.PC: 16
+IF.nop: 1
+----------------------------------------------------------------------
+State after executing cycle: 5
+IF.PC: 16
+IF.nop: 1
