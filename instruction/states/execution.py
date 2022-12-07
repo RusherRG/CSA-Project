@@ -1,6 +1,6 @@
 class ExecutionState:
     def __init__(self) -> None:
-        self.nop: int = 2
+        self.nop: bool = True
         self.instr: str = ""
         self.read_data_1: str = "0" * 32
         self.read_data_2: str = "0" * 32

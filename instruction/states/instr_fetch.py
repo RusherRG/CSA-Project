@@ -1,6 +1,6 @@
 class InstructionFetchState:
     def __init__(self) -> None:
-        self.nop: int = 0
+        self.nop: bool = False
         self.PC: int = 0
 
     def __dict__(self):

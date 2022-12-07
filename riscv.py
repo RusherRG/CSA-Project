@@ -84,11 +84,7 @@ class FiveStageCore(Core):
         self.id_stage.run()
 
         # --------------------- IF stage ---------------------
-        if not (self.cycle >= 2 and self.state.EX.nop):
-            self.if_stage.run()
-
-        if self.cycle > 10:
-            self.halted = True
+        self.if_stage.run()
 
         if (
             self.state.IF.nop

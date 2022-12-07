@@ -11,8 +11,12 @@ class InstructionFetchStage:
         self.ins_mem = ins_mem
 
     def run(self):
-        if self.state.IF.nop:
-            self.state.IF.nop -= 1
+        if self.state.IF.nop or (self.state.EX.nop and not self.state.MEM.nop):
             return
-        self.state.ID.instr = self.ins_mem.read_instr(self.state.IF.PC)[::-1]
-        self.state.IF.PC += 4
+        instr = self.ins_mem.read_instr(self.state.IF.PC)[::-1]
+        if instr == "1" * 32:
+            self.state.IF.nop = True
+        else:
+            if not self.state.ID.nop:
+                self.state.IF.PC += 4
+                self.state.ID.instr = instr

@@ -10,7 +10,8 @@ class MemoryAccessStage:
 
     def run(self):
         if self.state.MEM.nop:
-            self.state.MEM.nop -= 1
+            if not self.state.EX.nop:
+                self.state.MEM.nop = False
             return
         if self.state.MEM.read_mem != 0:
             self.state.WB.write_data = self.data_mem.read_data_mem(self.state.MEM.alu_result)
@@ -23,3 +24,6 @@ class MemoryAccessStage:
             self.state.MEM.store_data = self.state.MEM.alu_result
         self.state.WB.write_enable = self.state.MEM.write_enable
         self.state.WB.write_reg_addr = self.state.MEM.write_reg_addr
+
+        if self.state.EX.nop:
+            self.state.MEM.nop = True

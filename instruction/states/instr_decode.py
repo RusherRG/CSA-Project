@@ -1,6 +1,6 @@
 class InstructionDecodeState:
     def __init__(self) -> None:
-        self.nop: int = 1
+        self.nop: bool = True
         self.instr: str = "0"*32
 
     def __dict__(self):

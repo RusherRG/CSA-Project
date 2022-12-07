@@ -1,4 +1,4 @@
-from utils import RegisterFile, State
+from utils import RegisterFile, State, bin2int
 
 
 class InstructionDecodeStage:
@@ -20,7 +20,7 @@ class InstructionDecodeStage:
             return 1
         elif rs == self.state.MEM.write_reg_addr and self.state.MEM.read_mem != 0:
             # MEM to 1st
-            self.state.EX.nop = 1
+            self.state.EX.nop = True
             return 1
         else:
             return 0
@@ -35,7 +35,8 @@ class InstructionDecodeStage:
 
     def run(self):
         if self.state.ID.nop:
-            self.state.ID.nop -= 1
+            if not self.state.IF.nop:
+                self.state.ID.nop = False
             return
 
         self.state.EX.instr = self.state.ID.instr
@@ -78,6 +79,7 @@ class InstructionDecodeStage:
             rs1 = self.state.ID.instr[15:20][::-1]
 
             forward_signal_1 = self.detect_hazard(rs1)
+
             if self.state.EX.nop:
                 return
 
@@ -88,16 +90,58 @@ class InstructionDecodeStage:
             self.state.EX.is_I_type = True
 
             self.state.EX.imm = self.state.ID.instr[20:][::-1]
-            self.state.EX.write_enable = opcode == "0010011"
-            self.state.EX.write_mem = opcode == "000011"
+            self.state.EX.write_enable = True
+            self.state.EX.read_mem = opcode == "0000011"
 
             self.state.EX.alu_op = func3
         elif opcode == "1101111":
             # j-type instruction
-            pass
+            self.state.EX.imm = (
+                "0"
+                + self.state.ID.instr[21:31]
+                + self.state.ID.instr[20]
+                + self.state.ID.instr[12:20]
+                + self.state.ID.instr[31]
+            )[::-1]
+            self.state.EX.write_reg_addr = self.state.ID.instr[7:12][::-1]
+            self.state.IF.PC += bin2int(self.state.EX.imm, sign_ext=True) - 4
+            self.state.ID.nop = True
+            self.state.EX.nop = True
+
         elif opcode == "1100011":
             # b-type instruction
-            pass
+            rs1 = self.state.ID.instr[15:20][::-1]
+            rs2 = self.state.ID.instr[20:25][::-1]
+
+            forward_signal_1 = self.detect_hazard(rs1)
+            forward_signal_2 = self.detect_hazard(rs2)
+
+            if self.state.EX.nop:
+                return
+
+            self.state.EX.rs = rs1
+            self.state.EX.rt = rs2
+            self.state.EX.read_data_1 = self.read_data(rs1, forward_signal_1)
+            self.state.EX.read_data_2 = self.read_data(rs2, forward_signal_2)
+            diff = bin2int(self.state.EX.read_data_1, sign_ext=True) - bin2int(
+                self.state.EX.read_data_2, sign_ext=True
+            )
+
+            self.state.EX.imm = (
+                "0"
+                + self.state.ID.instr[8:12]
+                + self.state.ID.instr[25:31]
+                + self.state.ID.instr[7]
+                + self.state.ID.instr[31]
+            )[::-1]
+
+            if (diff == 0 and func3 == "000") or (diff != 0 and func3 == "001"):
+                self.state.IF.PC += bin2int(self.state.EX.imm, sign_ext=True) - 4
+                self.state.ID.nop = True
+                self.state.EX.nop = True
+            else:
+                self.state.EX.nop = True
+
         elif opcode == "0100011":
             # sw-type instruction
             rs1 = self.state.ID.instr[15:20][::-1]
@@ -109,6 +153,8 @@ class InstructionDecodeStage:
             if self.state.EX.nop:
                 return
 
+            self.state.EX.rs = rs1
+            self.state.EX.rt = rs2
             self.state.EX.read_data_1 = self.read_data(rs1, forward_signal_1)
             self.state.EX.read_data_2 = self.read_data(rs2, forward_signal_2)
 
@@ -117,8 +163,7 @@ class InstructionDecodeStage:
             ]
             self.state.EX.write_mem = True
             self.state.EX.alu_op = "000"
-        else:
-            # halt instruction
-            self.state.ID.nop = 1
-            return None
+
+        if self.state.IF.nop:
+            self.state.ID.nop = True
         return 1
