@@ -14,5 +14,5 @@ class WriteBackStage:
         if self.state.WB.nop:
             self.state.WB.nop -= 1
             return
-        if self.state.WB.write_enable and self.state.WB.write_data:
+        if self.state.WB.write_enable:
             self.rf.write_RF(self.state.WB.write_reg_addr, self.state.WB.write_data)

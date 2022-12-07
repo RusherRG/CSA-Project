@@ -167,25 +167,25 @@ if __name__ == "__main__":
     print("IO Directory:", io_dir)
 
     imem = InsMem("Imem", io_dir)
-    dmem_ss = DataMem("SS", io_dir)
-    # dmem_fs = DataMem("FS", io_dir)
+    # dmem_ss = DataMem("SS", io_dir)
+    dmem_fs = DataMem("FS", io_dir)
 
-    ssCore = SingleStageCore(io_dir, imem, dmem_ss)
-    # fsCore = FiveStageCore(io_dir, imem, dmem_fs)
+    # ssCore = SingleStageCore(io_dir, imem, dmem_ss)
+    fsCore = FiveStageCore(io_dir, imem, dmem_fs)
 
     while True:
-        if not ssCore.halted:
-            ssCore.step()
+        # if not ssCore.halted:
+        #     ssCore.step()
 
-        # if not fsCore.halted:
-        #     fsCore.step()
+        if not fsCore.halted:
+            fsCore.step()
 
-        # if fsCore.halted:
-        #     break
-
-        if ssCore.halted:
+        if fsCore.halted:
             break
 
+        # if ssCore.halted:
+        #     break
+
     # dump SS and FS data mem.
-    dmem_ss.output_data_mem()
-    # dmem_fs.output_data_mem()
+    # dmem_ss.output_data_mem()
+    dmem_fs.output_data_mem()

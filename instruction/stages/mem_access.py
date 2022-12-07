@@ -13,10 +13,7 @@ class MemoryAccessStage:
             self.state.MEM.nop -= 1
             return
         if self.state.MEM.read_mem != 0:
-            mem_data_bin = "0b" + "".join(
-                self.data_mem.read_data_mem(self.state.MEM.alu_result)
-            )
-            self.state.WB.write_data = int(mem_data_bin, 2)
+            self.state.WB.write_data = self.data_mem.read_data_mem(self.state.MEM.alu_result)
         elif self.state.MEM.write_mem != 0:
             self.data_mem.write_data_mem(
                 self.state.MEM.alu_result, self.state.MEM.store_data

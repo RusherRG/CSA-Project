@@ -1,7 +1,7 @@
 class ExecutionState:
     def __init__(self) -> None:
         self.nop: int = 2
-        self.instr: str = "0" * 32
+        self.instr: str = ""
         self.read_data_1: str = "0" * 32
         self.read_data_2: str = "0" * 32
         self.imm: str = "0" * 32
@@ -11,7 +11,7 @@ class ExecutionState:
         self.is_I_type: bool = False
         self.read_mem: bool = False
         self.write_mem: bool = False
-        self.alu_op = [0, 0]
+        self.alu_op: str = "000" # 000 -> add, 001 -> sub, 111 -> and, 110 -> or, 100 -> xor
         self.write_enable: bool = False
 
     def __dict__(self):

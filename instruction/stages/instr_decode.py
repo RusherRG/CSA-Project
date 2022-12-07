@@ -25,10 +25,10 @@ class InstructionDecodeStage:
         else:
             return 0
 
-    def read_data(self, rs, i):
-        if self.state.EX.alu_op[i] == 1:
+    def read_data(self, rs, forward_signal):
+        if forward_signal == 1:
             return self.state.WB.write_data
-        elif self.state.EX.alu_op[i] == 2:
+        elif forward_signal == 2:
             return self.state.MEM.alu_result
         else:
             return self.rf.read_RF(rs)
@@ -39,48 +39,59 @@ class InstructionDecodeStage:
             return
 
         self.state.EX.instr = self.state.ID.instr
+        self.state.EX.is_I_type = False
+        self.state.EX.read_mem = False
+        self.state.EX.write_mem = False
+        self.state.EX.write_enable = False
+
         opcode = self.state.ID.instr[:7][::-1]
-        
+        func3 = self.state.ID.instr[12:15][::-1]
+
         if opcode == "0110011":
             # r-type instruction
-            rs1 = int("0b" + self.state.ID.instr[15:20][::-1], 2)
-            rs2 = int("0b" + self.state.ID.instr[20:25][::-1], 2)
+            rs1 = self.state.ID.instr[15:20][::-1]
+            rs2 = self.state.ID.instr[20:25][::-1]
 
-            self.state.EX.alu_op[0] = self.detect_hazard(rs1)
-            self.state.EX.alu_op[1] = self.detect_hazard(rs2)
+            forward_signal_1 = self.detect_hazard(rs1)
+            forward_signal_2 = self.detect_hazard(rs2)
 
             if self.state.EX.nop:
                 return
 
-            self.state.EX.read_data_1 = self.read_data(rs1, 0)
-            self.state.EX.read_data_2 = self.read_data(rs2, 1)
+            self.state.EX.rs = rs1
+            self.state.EX.rt = rs2
+            self.state.EX.read_data_1 = self.read_data(rs1, forward_signal_1)
+            self.state.EX.read_data_2 = self.read_data(rs2, forward_signal_2)
 
-            self.state.EX.write_reg_addr = int(
-                "0b" + self.state.ID.instr[7:12][::-1], 2
-            )
-            self.state.EX.write_enable = 1
+            self.state.EX.write_reg_addr = self.state.ID.instr[7:12][::-1]
+            self.state.EX.write_enable = True
+
+            func7 = self.state.ID.instr[25:][::-1]
+            if func3 == "000":
+                # add and sub instruction
+                self.state.EX.alu_op = "000" if func7 == "0000000" else "001"
+            else:
+                self.state.EX.alu_op = func3
 
         elif opcode == "0010011" or opcode == "0000011":
             # i-type instruction
-            rs1 = int("0b" + self.state.ID.instr[15:20][::-1], 2)
+            rs1 = self.state.ID.instr[15:20][::-1]
 
-            self.state.EX.alu_op[0] = self.detect_hazard(rs1)
+            forward_signal_1 = self.detect_hazard(rs1)
             if self.state.EX.nop:
                 return
 
-            self.state.EX.read_data_1 = self.read_data(rs1, 0)
+            self.state.EX.rs = rs1
+            self.state.EX.read_data_1 = self.read_data(rs1, forward_signal_1)
 
-            self.state.EX.write_reg_addr = int(
-                "0b" + self.state.ID.instr[7:12][::-1], 2
-            )
+            self.state.EX.write_reg_addr = self.state.ID.instr[7:12][::-1]
             self.state.EX.is_I_type = True
-            if self.state.ID.instr[20:][::-1][0] == "0":
-                self.state.EX.imm = int("0b" + self.state.ID.instr[20:-1][::-1], 2)
-            else:
-                self.state.EX.imm = -(
-                    -int("0b" + self.state.ID.instr[20:-1][::-1], 2) & 0b11111111111
-                )
-            self.state.EX.write_enable = 1
+
+            self.state.EX.imm = self.state.ID.instr[20:][::-1]
+            self.state.EX.write_enable = opcode == "0010011"
+            self.state.EX.write_mem = opcode == "000011"
+
+            self.state.EX.alu_op = func3
         elif opcode == "1101111":
             # j-type instruction
             pass
@@ -89,21 +100,23 @@ class InstructionDecodeStage:
             pass
         elif opcode == "0100011":
             # sw-type instruction
-            rs1 = int("0b" + self.state.ID.instr[15:20][::-1], 2)
-            rs2 = int("0b" + self.state.ID.instr[20:25][::-1], 2)
+            rs1 = self.state.ID.instr[15:20][::-1]
+            rs2 = self.state.ID.instr[20:25][::-1]
 
-            self.state.EX.alu_op[0] = self.detect_hazard(rs1)
-            self.state.EX.alu_op[1] = self.detect_hazard(rs2)
+            forward_signal_1 = self.detect_hazard(rs1)
+            forward_signal_2 = self.detect_hazard(rs2)
 
             if self.state.EX.nop:
                 return
 
-            self.state.EX.read_data_1 = self.read_data(rs1, 0)
-            self.state.EX.read_data_2 = self.read_data(rs2, 1)
+            self.state.EX.read_data_1 = self.read_data(rs1, forward_signal_1)
+            self.state.EX.read_data_2 = self.read_data(rs2, forward_signal_2)
 
-            self.state.EX.imm = int(
-                "0b" + (self.state.ID.instr[7:12] + self.state.ID.instr[25:])[::-1], 2
-            )
+            self.state.EX.imm = (self.state.ID.instr[7:12] + self.state.ID.instr[25:])[
+                ::-1
+            ]
+            self.state.EX.write_mem = True
+            self.state.EX.alu_op = "000"
         else:
             # halt instruction
             self.state.ID.nop = 1

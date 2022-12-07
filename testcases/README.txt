@@ -16,4 +16,6 @@ INFORMATION:
 Edge cases:
 
 - Don't update R0
-- 
+- Sign extension of imm
+- JAL and branch execution in which state
+ 
