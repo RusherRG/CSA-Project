@@ -1,4 +1,4 @@
-from utils import RegisterFile, State, bin2int
+from utils import RegisterFile, State, bin2int, int2bin
 
 
 class InstructionDecodeStage:
@@ -20,7 +20,7 @@ class InstructionDecodeStage:
             return 1
         elif rs == self.state.MEM.write_reg_addr and self.state.MEM.read_mem != 0:
             # MEM to 1st
-            self.state.EX.nop = True
+            self.state.ID.hazard_nop = True
             return 1
         else:
             return 0
@@ -44,6 +44,7 @@ class InstructionDecodeStage:
         self.state.EX.read_mem = False
         self.state.EX.write_mem = False
         self.state.EX.write_enable = False
+        self.state.ID.hazard_nop = False
 
         opcode = self.state.ID.instr[:7][::-1]
         func3 = self.state.ID.instr[12:15][::-1]
@@ -56,7 +57,8 @@ class InstructionDecodeStage:
             forward_signal_1 = self.detect_hazard(rs1)
             forward_signal_2 = self.detect_hazard(rs2)
 
-            if self.state.EX.nop:
+            if self.state.ID.hazard_nop:
+                self.state.EX.nop = True
                 return
 
             self.state.EX.rs = rs1
@@ -68,11 +70,23 @@ class InstructionDecodeStage:
             self.state.EX.write_enable = True
 
             func7 = self.state.ID.instr[25:][::-1]
+
             if func3 == "000":
                 # add and sub instruction
-                self.state.EX.alu_op = "000" if func7 == "0000000" else "001"
-            else:
-                self.state.EX.alu_op = func3
+                self.state.EX.alu_op = "00"
+                if func7 == "0100000":
+                    self.state.EX.read_data_2 = int2bin(
+                        -bin2int(self.state.EX.read_data_2, sign_ext=True)
+                    )
+            elif func3 == "111":
+                # and instruction
+                self.state.EX.alu_op = "01"
+            elif func3 == "110":
+                # or instruction
+                self.state.EX.alu_op = "10"
+            elif func3 == "100":
+                # xor instruction
+                self.state.EX.alu_op = "11"
 
         elif opcode == "0010011" or opcode == "0000011":
             # i-type instruction
@@ -80,7 +94,8 @@ class InstructionDecodeStage:
 
             forward_signal_1 = self.detect_hazard(rs1)
 
-            if self.state.EX.nop:
+            if self.state.ID.hazard_nop:
+                self.state.EX.nop = True
                 return
 
             self.state.EX.rs = rs1
@@ -93,7 +108,18 @@ class InstructionDecodeStage:
             self.state.EX.write_enable = True
             self.state.EX.read_mem = opcode == "0000011"
 
-            self.state.EX.alu_op = func3
+            if func3 == "000":
+                # add instruction
+                self.state.EX.alu_op = "00"
+            elif func3 == "111":
+                # and instruction
+                self.state.EX.alu_op = "01"
+            elif func3 == "110":
+                # or instruction
+                self.state.EX.alu_op = "10"
+            elif func3 == "100":
+                # xor instruction
+                self.state.EX.alu_op = "11"
         elif opcode == "1101111":
             # j-type instruction
             self.state.EX.imm = (
@@ -104,9 +130,13 @@ class InstructionDecodeStage:
                 + self.state.ID.instr[31]
             )[::-1]
             self.state.EX.write_reg_addr = self.state.ID.instr[7:12][::-1]
+            self.state.EX.read_data_1 = int2bin(self.state.IF.PC)
+            self.state.EX.read_data_2 = int2bin(-4)
+            self.state.EX.write_enable = True
+            self.state.EX.alu_op = "00"
+
             self.state.IF.PC += bin2int(self.state.EX.imm, sign_ext=True) - 4
             self.state.ID.nop = True
-            self.state.EX.nop = True
 
         elif opcode == "1100011":
             # b-type instruction
@@ -116,7 +146,8 @@ class InstructionDecodeStage:
             forward_signal_1 = self.detect_hazard(rs1)
             forward_signal_2 = self.detect_hazard(rs2)
 
-            if self.state.EX.nop:
+            if self.state.ID.hazard_nop:
+                self.state.EX.nop = True
                 return
 
             self.state.EX.rs = rs1
@@ -150,7 +181,8 @@ class InstructionDecodeStage:
             forward_signal_1 = self.detect_hazard(rs1)
             forward_signal_2 = self.detect_hazard(rs2)
 
-            if self.state.EX.nop:
+            if self.state.ID.hazard_nop:
+                self.state.EX.nop = True
                 return
 
             self.state.EX.rs = rs1
@@ -162,7 +194,7 @@ class InstructionDecodeStage:
                 ::-1
             ]
             self.state.EX.write_mem = True
-            self.state.EX.alu_op = "000"
+            self.state.EX.alu_op = "00"
 
         if self.state.IF.nop:
             self.state.ID.nop = True

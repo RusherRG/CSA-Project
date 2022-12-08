@@ -23,11 +23,12 @@ class SingleStageCore(Core):
         # Your implementation
         if self.state.IF.nop:
             self.halted = True
+        prev_instr = self.state.ID.instr
 
         new_instr = self.ext_imem.read_instr(self.state.IF.PC)[::-1]
         self.state.ID.instr = new_instr
         instr = InstructionSet().decode(new_instr)
-        print(instr)
+
         instr.run(self.state, self.myRF, self.ext_dmem)
 
         self.myRF.output_RF(self.cycle)  # dump RF
@@ -35,7 +36,9 @@ class SingleStageCore(Core):
             self.state, self.cycle
         )  # print states after executing cycle 0, cycle 1, cycle 2 ...
 
+        self.num_instr += int(prev_instr != new_instr)
         self.state.next()  # The end of the cycle and updates the current state with the values calculated in this cycle
+        self.state.ID.instr = new_instr
         self.cycle += 1
 
     def print_state(self, state, cycle):
@@ -43,8 +46,8 @@ class SingleStageCore(Core):
             "-" * 70 + "\n",
             "State after executing cycle: " + str(cycle) + "\n",
         ]
-        printstate.append("IF.PC: " + str(self.state.IF.PC) + "\n")
-        printstate.append("IF.nop: " + str(self.state.IF.nop) + "\n")
+        printstate.append("IF.PC: " + str(state.IF.PC) + "\n")
+        printstate.append("IF.nop: " + str(state.IF.nop) + "\n")
 
         if cycle == 0:
             perm = "w"
@@ -52,6 +55,13 @@ class SingleStageCore(Core):
             perm = "a"
         with open(self.opFilePath, perm) as wf:
             wf.writelines(printstate)
+
+    def print_metrics(self):
+        print("Performance of Single Stage:")
+        print(f"#Cycles -> {self.cycle}")
+        print(f"#Instructions -> {self.num_instr}")
+        print(f"CPI -> {self.cycle / self.num_instr}")
+        print(f"IPC -> {self.num_instr / self.cycle}")
 
 
 class FiveStageCore(Core):
@@ -71,6 +81,16 @@ class FiveStageCore(Core):
         #       IF ID EX MEM WB       add x6, x3, x4
         #          IF ID EX MEM WB
         #             IF ID EX MEM WB
+        if (
+            self.state.IF.nop
+            and self.state.ID.nop
+            and self.state.EX.nop
+            and self.state.MEM.nop
+            and self.state.WB.nop
+        ):
+            self.halted = True
+        current_instr = self.state.ID.instr
+
         # --------------------- WB stage ---------------------
         self.wb_stage.run()
 
@@ -86,21 +106,13 @@ class FiveStageCore(Core):
         # --------------------- IF stage ---------------------
         self.if_stage.run()
 
-        if (
-            self.state.IF.nop
-            and self.state.ID.nop
-            and self.state.EX.nop
-            and self.state.MEM.nop
-            and self.state.WB.nop
-        ):
-            self.halted = True
-
         self.myRF.output_RF(self.cycle)  # dump RF
         self.print_state(
-            self.nextState, self.cycle
+            self.state, self.cycle
         )  # print states after executing cycle 0, cycle 1, cycle 2 ...
 
         # self.state.next()  # The end of the cycle and updates the current state with the values calculated in this cycle
+        self.num_instr += int(current_instr != self.state.ID.instr)
         self.cycle += 1
 
     def print_state(self, state, cycle):
@@ -111,31 +123,31 @@ class FiveStageCore(Core):
         printstate.extend(
             [
                 "IF." + key + ": " + str(val) + "\n"
-                for key, val in self.state.IF.__dict__().items()
+                for key, val in state.IF.__dict__().items()
             ]
         )
         printstate.extend(
             [
                 "ID." + key + ": " + str(val) + "\n"
-                for key, val in self.state.ID.__dict__().items()
+                for key, val in state.ID.__dict__().items()
             ]
         )
         printstate.extend(
             [
                 "EX." + key + ": " + str(val) + "\n"
-                for key, val in self.state.EX.__dict__().items()
+                for key, val in state.EX.__dict__().items()
             ]
         )
         printstate.extend(
             [
                 "MEM." + key + ": " + str(val) + "\n"
-                for key, val in self.state.MEM.__dict__().items()
+                for key, val in state.MEM.__dict__().items()
             ]
         )
         printstate.extend(
             [
                 "WB." + key + ": " + str(val) + "\n"
-                for key, val in self.state.WB.__dict__().items()
+                for key, val in state.WB.__dict__().items()
             ]
         )
 
@@ -145,6 +157,15 @@ class FiveStageCore(Core):
             perm = "a"
         with open(self.opFilePath, perm) as wf:
             wf.writelines(printstate)
+
+    def print_metrics(self):
+        # incrementing num of instructions because of an extra HALT instruction which is never decoded
+        self.num_instr += 1
+        print("Performance of Five Stage:")
+        print(f"#Cycles -> {self.cycle}")
+        print(f"#Instructions -> {self.num_instr}")
+        print(f"CPI -> {self.cycle / self.num_instr}")
+        print(f"IPC -> {self.num_instr / self.cycle}")
 
 
 if __name__ == "__main__":
@@ -163,25 +184,23 @@ if __name__ == "__main__":
     print("IO Directory:", io_dir)
 
     imem = InsMem("Imem", io_dir)
-    # dmem_ss = DataMem("SS", io_dir)
-    dmem_fs = DataMem("FS", io_dir)
 
-    # ssCore = SingleStageCore(io_dir, imem, dmem_ss)
-    fsCore = FiveStageCore(io_dir, imem, dmem_fs)
-
+    dmem_ss = DataMem("SS", io_dir)
+    ssCore = SingleStageCore(io_dir, imem, dmem_ss)
     while True:
-        # if not ssCore.halted:
-        #     ssCore.step()
+        if not ssCore.halted:
+            ssCore.step()
+        if ssCore.halted:
+            break
+    ssCore.print_metrics()
+    dmem_ss.output_data_mem()
 
+    dmem_fs = DataMem("FS", io_dir)
+    fsCore = FiveStageCore(io_dir, imem, dmem_fs)
+    while True:
         if not fsCore.halted:
             fsCore.step()
-
         if fsCore.halted:
             break
-
-        # if ssCore.halted:
-        #     break
-
-    # dump SS and FS data mem.
-    # dmem_ss.output_data_mem()
+    fsCore.print_metrics()
     dmem_fs.output_data_mem()

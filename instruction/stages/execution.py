@@ -18,25 +18,21 @@ class ExecutionStage:
             else self.state.EX.imm
         )
 
-        if self.state.EX.alu_op == "000":
+        if self.state.EX.alu_op == "00":
             self.state.MEM.alu_result = int2bin(
                 bin2int(operand_1, sign_ext=True) + bin2int(operand_2, sign_ext=True)
             )
-        elif self.state.EX.alu_op == "001":
+        elif self.state.EX.alu_op == "01":
             self.state.MEM.alu_result = int2bin(
-                bin2int(operand_1, sign_ext=True) - bin2int(operand_2, sign_ext=True)
+                bin2int(operand_1, sign_ext=True) & bin2int(operand_2, sign_ext=True)
             )
-        elif self.state.EX.alu_op == "100":
-            self.state.MEM.alu_result = int2bin(
-                bin2int(operand_1, sign_ext=True) ^ bin2int(operand_2, sign_ext=True)
-            )
-        elif self.state.EX.alu_op == "110":
+        elif self.state.EX.alu_op == "10":
             self.state.MEM.alu_result = int2bin(
                 bin2int(operand_1, sign_ext=True) | bin2int(operand_2, sign_ext=True)
             )
-        elif self.state.EX.alu_op == "111":
+        elif self.state.EX.alu_op == "11":
             self.state.MEM.alu_result = int2bin(
-                bin2int(operand_1, sign_ext=True) & bin2int(operand_2, sign_ext=True)
+                bin2int(operand_1, sign_ext=True) ^ bin2int(operand_2, sign_ext=True)
             )
 
         self.state.MEM.rs = self.state.EX.rs

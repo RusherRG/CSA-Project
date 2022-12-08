@@ -93,6 +93,7 @@ class Core(object):
     def __init__(self, io_dir, imem, dmem):
         self.myRF = RegisterFile(io_dir)
         self.cycle = 0
+        self.num_instr = 0
         self.halted = False
         self.io_dir = io_dir
         self.state = State()
