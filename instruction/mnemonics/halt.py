@@ -16,16 +16,16 @@ class HALT(Instruction):
         ex_state: ExecutionState,
         rf: RegisterFile,
     ) -> None:
-        id_state.nop = 1
+        id_state.nop = True
 
     def execute(self, ex_state: ExecutionState, mem_state: MemoryAccessState) -> None:
-        ex_state.nop = 1
+        ex_state.nop = True
 
     def memory_access(
         self, mem_state: MemoryAccessState, wb_state: WriteBackState, data_mem: DataMem
     ) -> None:
-        mem_state.nop = 1
+        mem_state.nop = True
 
     def writeback(self, wb_state: WriteBackState, if_state: InstructionFetchState, rf: RegisterFile) -> None:
-        wb_state.nop = 1
-        if_state.nop = 1
+        wb_state.nop = True
+        if_state.nop = True

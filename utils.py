@@ -1,3 +1,4 @@
+import os
 from instruction.states import (
     InstructionFetchState,
     InstructionDecodeState,
@@ -13,7 +14,7 @@ class InsMem(object):
     def __init__(self, name: str, io_dir: str):
         self.id = name
 
-        with open(io_dir + "/imem.txt", "r") as im:
+        with open(io_dir + os.sep + "imem.txt", "r") as im:
             self.IMem = [data.replace("\n", "") for data in im.readlines()]
 
     def read_instr(self, read_address: int) -> str:
@@ -26,7 +27,7 @@ class DataMem(object):
     def __init__(self, name: str, io_dir: str):
         self.id = name
         self.io_dir = io_dir
-        with open(io_dir + "/dmem.txt", "r") as dm:
+        with open(io_dir + os.sep + "dmem.txt", "r") as dm:
             self.DMem = [data.replace("\n", "") for data in dm.readlines()]
         self.DMem.extend(["00000000"] * (MemSize - len(self.DMem)))
 
@@ -43,7 +44,7 @@ class DataMem(object):
             self.DMem[addr_int + i] = write_data[8 * i : 8 * (i + 1)]
 
     def output_data_mem(self):
-        resPath = self.io_dir + "/output/" + self.id + "_DMEMResult.txt"
+        resPath = self.io_dir + os.sep + self.id + "_DMEMResult.txt"
         with open(resPath, "w") as rp:
             rp.writelines([str(data) + "\n" for data in self.DMem])
 

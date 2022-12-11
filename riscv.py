@@ -16,8 +16,8 @@ MemSize = 1000  # memory size, in reality, the memory size should be 2^32, but f
 
 class SingleStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
-        super(SingleStageCore, self).__init__(io_dir + "/output/SS_", imem, dmem)
-        self.opFilePath = io_dir + "/output/StateResult_SS.txt"
+        super(SingleStageCore, self).__init__(io_dir + os.sep + "SS_", imem, dmem)
+        self.opFilePath = io_dir + os.sep + "StateResult_SS.txt"
 
     def step(self):
         # Your implementation
@@ -66,8 +66,8 @@ class SingleStageCore(Core):
 
 class FiveStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
-        super(FiveStageCore, self).__init__(io_dir + "/output/FS_", imem, dmem)
-        self.opFilePath = io_dir + "/output/StateResult_FS.txt"
+        super(FiveStageCore, self).__init__(io_dir + os.sep + "FS_", imem, dmem)
+        self.opFilePath = io_dir + os.sep + "StateResult_FS.txt"
         self.if_stage = InstructionFetchStage(self.state, self.ext_imem)
         self.id_stage = InstructionDecodeStage(self.state, self.myRF)
         self.ex_stage = ExecutionStage(self.state)
@@ -90,7 +90,6 @@ class FiveStageCore(Core):
         ):
             self.halted = True
         current_instr = self.state.ID.instr
-
         # --------------------- WB stage ---------------------
         self.wb_stage.run()
 

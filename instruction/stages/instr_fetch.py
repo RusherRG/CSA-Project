@@ -18,5 +18,6 @@ class InstructionFetchStage:
             self.state.IF.nop = True
             self.state.ID.nop = True
         else:
+            self.state.ID.PC = self.state.IF.PC
             self.state.IF.PC += 4
             self.state.ID.instr = instr

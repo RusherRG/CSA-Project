@@ -11,7 +11,7 @@ class InstructionDecodeStage:
         self.rf = rf
 
     def detect_hazard(self, rs):
-        if rs == self.state.EX.write_reg_addr and self.state.MEM.read_mem == 0:
+        if rs == self.state.MEM.write_reg_addr and self.state.MEM.read_mem == 0:
             # EX to 1st
             return 2
         elif rs == self.state.WB.write_reg_addr and self.state.WB.write_enable:
@@ -45,6 +45,7 @@ class InstructionDecodeStage:
         self.state.EX.write_mem = False
         self.state.EX.write_enable = False
         self.state.ID.hazard_nop = False
+        self.state.EX.write_reg_addr = "000000"
 
         opcode = self.state.ID.instr[:7][::-1]
         func3 = self.state.ID.instr[12:15][::-1]
@@ -130,12 +131,12 @@ class InstructionDecodeStage:
                 + self.state.ID.instr[31]
             )[::-1]
             self.state.EX.write_reg_addr = self.state.ID.instr[7:12][::-1]
-            self.state.EX.read_data_1 = int2bin(self.state.IF.PC)
-            self.state.EX.read_data_2 = int2bin(-4)
+            self.state.EX.read_data_1 = int2bin(self.state.ID.PC)
+            self.state.EX.read_data_2 = int2bin(4)
             self.state.EX.write_enable = True
             self.state.EX.alu_op = "00"
 
-            self.state.IF.PC += bin2int(self.state.EX.imm, sign_ext=True) - 4
+            self.state.IF.PC = self.state.ID.PC + bin2int(self.state.EX.imm, sign_ext=True)
             self.state.ID.nop = True
 
         elif opcode == "1100011":
@@ -167,7 +168,7 @@ class InstructionDecodeStage:
             )[::-1]
 
             if (diff == 0 and func3 == "000") or (diff != 0 and func3 == "001"):
-                self.state.IF.PC += bin2int(self.state.EX.imm, sign_ext=True) - 4
+                self.state.IF.PC = self.state.ID.PC + bin2int(self.state.EX.imm, sign_ext=True)
                 self.state.ID.nop = True
                 self.state.EX.nop = True
             else:
@@ -193,6 +194,7 @@ class InstructionDecodeStage:
             self.state.EX.imm = (self.state.ID.instr[7:12] + self.state.ID.instr[25:])[
                 ::-1
             ]
+            self.state.EX.is_I_type = True
             self.state.EX.write_mem = True
             self.state.EX.alu_op = "00"
 

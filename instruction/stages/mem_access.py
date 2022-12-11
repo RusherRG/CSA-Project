@@ -13,6 +13,7 @@ class MemoryAccessStage:
             if not self.state.EX.nop:
                 self.state.MEM.nop = False
             return
+            
         if self.state.MEM.read_mem != 0:
             self.state.WB.write_data = self.data_mem.read_data_mem(self.state.MEM.alu_result)
         elif self.state.MEM.write_mem != 0:
