@@ -56,13 +56,6 @@ class SingleStageCore(Core):
         with open(self.opFilePath, perm) as wf:
             wf.writelines(printstate)
 
-    def print_metrics(self):
-        print("Performance of Single Stage:")
-        print(f"#Cycles -> {self.cycle}")
-        print(f"#Instructions -> {self.num_instr}")
-        print(f"CPI -> {self.cycle / self.num_instr}")
-        print(f"IPC -> {self.num_instr / self.cycle}")
-
 
 class FiveStageCore(Core):
     def __init__(self, io_dir, imem, dmem):
@@ -157,14 +150,28 @@ class FiveStageCore(Core):
         with open(self.opFilePath, perm) as wf:
             wf.writelines(printstate)
 
-    def print_metrics(self):
-        # incrementing num of instructions because of an extra HALT instruction which is never decoded
-        self.num_instr += 1
-        print("Performance of Five Stage:")
-        print(f"#Cycles -> {self.cycle}")
-        print(f"#Instructions -> {self.num_instr}")
-        print(f"CPI -> {self.cycle / self.num_instr}")
-        print(f"IPC -> {self.num_instr / self.cycle}")
+
+def print_metrics(opFilePath: str, ss: SingleStageCore, fs: FiveStageCore):
+    ss_metrics = [
+        "Performance of Single Stage:",
+        f"#Cycles -> {ss.cycle}",
+        f"#Instructions -> {ss.num_instr}",
+        f"CPI -> {ss.cycle / ss.num_instr}",
+        f"IPC -> {ss.num_instr / ss.cycle}",
+    ]
+
+    # incrementing num of instructions because of an extra HALT instruction which is never decoded
+    fs.num_instr += 1
+    fs_metrics = [
+        "Performance of Five Stage:",
+        f"#Cycles -> {fs.cycle}",
+        f"#Instructions -> {fs.num_instr}",
+        f"CPI -> {fs.cycle / fs.num_instr}",
+        f"IPC -> {fs.num_instr / fs.cycle}",
+    ]
+
+    with open(opFilePath + os.sep + "PerformanceMetrics.txt", "w") as f:
+        f.write("\n".join(ss_metrics) + "\n\n" + "\n".join(fs_metrics))
 
 
 if __name__ == "__main__":
@@ -172,14 +179,14 @@ if __name__ == "__main__":
     # parse arguments for input file location
     parser = argparse.ArgumentParser(description="RV32I processor")
     parser.add_argument(
-        "--io_dir",
-        default="io_dir",
+        "--iodir",
+        default="testcases",
         type=str,
         help="Directory containing the input files.",
     )
     args = parser.parse_args()
 
-    io_dir = os.path.abspath(args.io_dir)
+    io_dir = os.path.abspath(args.iodir)
     print("IO Directory:", io_dir)
 
     imem = InsMem("Imem", io_dir)
@@ -191,7 +198,6 @@ if __name__ == "__main__":
             ssCore.step()
         if ssCore.halted:
             break
-    ssCore.print_metrics()
     dmem_ss.output_data_mem()
 
     dmem_fs = DataMem("FS", io_dir)
@@ -201,5 +207,6 @@ if __name__ == "__main__":
             fsCore.step()
         if fsCore.halted:
             break
-    fsCore.print_metrics()
     dmem_fs.output_data_mem()
+
+    print_metrics(io_dir, ssCore, fsCore)
